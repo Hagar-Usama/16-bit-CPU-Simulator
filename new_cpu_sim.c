@@ -54,19 +54,20 @@ int main(){
 	memory[51] = 0x0f;
 	read_from_file("program.txt" , memory , 256);	
 
-	int count = 0;
    /* main loop */ 
-   while (run && MBR<256 && operand <256){
+   while (run){
        //printf("******i/p*****\n");
        //printf("opcode (IR) >> ");
        //scanf("%i" , &memory[count++]);
-       if(memory[PC] == 240) break;
+       //if(memory[PC] == 240) break;
        //printf("operand >> " );
        //scanf("%i" , &memory[count++]);
        
        MAR = PC;                           /* PC to MAR */
+       printf("MAR = PC %d\n",PC);
        PC = PC +1;                         /* increment PC */
        MBR = memory[MAR];                  /* get next instruction */
+       printf("MBR = PC %d\n",PC);
        IR = MBR;                           /* copy MBR to IR */
        opcode = IR;                       /* store the opcode bits */
        
