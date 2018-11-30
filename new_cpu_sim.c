@@ -9,6 +9,7 @@
 #define BEQ     5
 #define BNE     6
 #define EXG     7   // exchanges the contents of two registers
+#define MUL		8
 #define STOP   15
 
 int power(int base, int pow);
@@ -20,6 +21,8 @@ int main(){
    unsigned short int PC =0;             /* program counter */ 
    unsigned short int D0 =5;             /* data register */ 
    unsigned short int A0 =0;             /* address register */ 
+   unsigned short int D1 = 0;
+   unsigned short int A1 = 0;
    unsigned short int CCR =0;            /* condition code register */ 
    unsigned short int MAR;              /*memory address register*/ 
    unsigned short int MBR;               /*memory buffer register*/ 
@@ -33,9 +36,7 @@ int main(){
    unsigned short int memory[256];        /* the memory */
    unsigned short int run = 1;            /* execute program while run is 1 */
   
-  
-
-  
+    
   int i = 0;
   for (i=0 ; i<256 ; i++) memory[i] = 0;
 
@@ -52,8 +53,11 @@ int main(){
 
 	memory[50] = 0x15;
 	memory[51] = 0x0f;
-	read_from_file("program.txt" , memory , 256);	
-
+	
+	read_from_file("program1.txt" , memory , 256);	
+	memory[9]=13;
+	
+	
    /* main loop */ 
    while (run){
        //printf("******i/p*****\n");
@@ -87,8 +91,8 @@ int main(){
         
         switch (amode){
         case 0 : { if(operand < 256) source = memory[operand];         break; } /* absolute */
-        case 1 : { source = operand;                 break; } /* literal */
-        case 2 : { if((operand + A0) < 256) source = memory[A0 + operand];    break; } /* indexed */
+        case 1 : { source = operand;                 break; } /* literal (immediate) */
+        case 2 : { if((operand + A0) < 256) source = memory[A0 + operand];    break; } /* indexed (indirect)*/
         case 3 : { if((operand+PC) < 256) source = memory[PC + operand];    break; } /* pc relative */
         default: source = operand;
         }
@@ -142,7 +146,13 @@ int main(){
                         }break;
                         }
             case EXG: {MBR = D0; D0=A0; A0=MBR; break;}
-            
+           
+            case MUL: { if((amode == 0) || (amode == 1)) {
+				
+				D0 = D0 * source;
+				}
+				 break;
+				}
             case STOP: {run = 0; break;}
                 
             }// end of switch opcode
