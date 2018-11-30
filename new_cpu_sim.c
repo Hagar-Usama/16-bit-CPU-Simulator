@@ -33,12 +33,16 @@ int main(){
    unsigned short int opcode;             /* the 4-bit opcode from the IR */
    unsigned short int amode;              /* the 2-bit addressing mode */
    unsigned short int direction;          /* the 1-bit data direction flag */
-   unsigned short int memory[256];        /* the memory */
+   unsigned short int memory[256] = {0};        /* the memory */
    unsigned short int run = 1;            /* execute program while run is 1 */
-  
+   unsigned short int select = 0;		  /*making use of the unused bit*/
+   unsigned short int D[2] ={0};		  /* Data registers */
+   unsigned short int i = 0;
+   unsigned short int ub = 15;
+   printf("D0 = %d\n",D[1]);
     
-  int i = 0;
-  for (i=0 ; i<256 ; i++) memory[i] = 0;
+  
+  //for (i=0 ; i<256 ; i++) memory[i] = 0;
 
    /*  7     6   5   4   3   2   1   0
    * Bit 1 and 0 2-bit address mode
@@ -87,6 +91,8 @@ int main(){
        direction = (opcode & 0x04)>>2;     /* get data direction  0 = register to memory
         *                                                         1 = memory to register  */
         printf("direction >> %d \n", direction);
+        ub = (opcode & 0x08)>>3;
+        printf("unused bit = %d\n",ub);
         opcode = opcode >> 4;              /* get the 4-bit instruction code */
         printf("instruction >> %d \n" , opcode);
         /* use the address mode to get the source operand */
@@ -103,35 +109,35 @@ int main(){
        
        /*** now execute the instruction ***/
         switch (opcode){
-            case MOVE : { if (direction == 0) destination = D0;
-                            else              D0 = source;
-                            if (D0 == 0) CCR = 1; else CCR =0;  /* update CCR */
+            case MOVE : { if (direction == 0) destination = D[ub];
+                            else              D[ub] = source;
+                            if (D[ub] == 0) CCR = 1; else CCR =0;  /* update CCR */
                           break;
                         }
             case ADD : { if (direction == 0)
-                            { destination = D0 + source;
+                            { destination = D[ub] + source;
                               if (destination == 0) CCR = 1; else CCR = 0; 
                             }
                         else
-                            { D0 = D0 + source;
-                              if (D0 == 0) CCR = 1; CCR = 0;
+                            { D[ub] = D[ub] + source;
+                              if (D[ub] == 0) CCR = 1; CCR = 0;
                             }
                         break;
                         }
             case SUB : { if (direction == 0)
-                            { destination = D0 - source;
+                            { destination = D[ub] - source;
                               if (destination == 0) CCR = 1; else CCR = 0; 
                             }
                         else
-                            { D0 = D0 - source;
-                              if (D0 == 0) CCR = 1; CCR = 0;
+                            { D[ub] = D[ub] - source;
+                              if (D[ub] == 0) CCR = 1; CCR = 0;
                             }
                         break;
                         }
             case BRA : { if(amode == 0) PC = operand;
 						 if(amode == 1) PC = PC + operand; break;
 				}
-            case CMP : { MBR = D0 - source;
+            case CMP : { MBR = D[ub] - source;
                          if (MBR == 0) CCR =1;
                          else CCR = 0; break;
                         }
@@ -147,12 +153,12 @@ int main(){
                         
                         }break;
                         }
-            case EXG: {MBR = D0; D0=A0; A0=MBR; break;}
+            case EXG: {MBR = D[ub]; D[ub]=A0; A0=MBR; break;}
            
             case MUL: { if((amode == 0) || (amode == 1)) {
 				
-				D0 = D0 * source;
-				printf("D0 in mul = %d\n" ,D0);
+				D[ub] = D[ub] * source;
+				printf("D0 in mul = %d\n" ,D[ub]);
 				printf("source in mul = %d\n" ,source);
 				}
 				 break;
@@ -177,7 +183,7 @@ int main(){
            
        printf("****o/p*****\n");    
 	   printf("CCR :%d\n" , CCR);
-       printf("D0 :%d\n" , D0);
+       printf("D0 :%d\n" , D[0]);
        printf("A0 :%d\n" , A0);
        printf("destination :%d\n" , destination);
        printf("source :%d\n" , source);
