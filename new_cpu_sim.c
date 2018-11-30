@@ -13,6 +13,7 @@
 
 int power(int base, int pow);
 int bin_to_dec(int bin);
+int read_from_file(char* filename , unsigned short int* array , int size);
 
 int main(){
     
@@ -49,16 +50,19 @@ int main(){
    *  Bit 7   4-bit instruction code
    */
 
-	
+	memory[50] = 0x15;
+	memory[51] = 0x0f;
+	read_from_file("program.txt" , memory , 256);	
+
 	int count = 0;
    /* main loop */ 
    while (run && MBR<256 && operand <256){
-       printf("******i/p*****\n");
-       printf("opcode >> ");
-       scanf("%i" , &memory[count++]);
-       if(memory[count-1] == 240) break;
-       printf("operand >> " );
-       scanf("%i" , &memory[count++]);
+       //printf("******i/p*****\n");
+       //printf("opcode (IR) >> ");
+       //scanf("%i" , &memory[count++]);
+       if(memory[PC] == 240) break;
+       //printf("operand >> " );
+       //scanf("%i" , &memory[count++]);
        
        MAR = PC;                           /* PC to MAR */
        PC = PC +1;                         /* increment PC */
@@ -193,3 +197,30 @@ int bin_to_dec(int bin){
 	
 	}return sum;}
 	
+	
+
+int read_from_file(char* filename , unsigned short int* array , int size){
+	
+	
+	
+	FILE *fp;
+    fp = fopen(filename, "r");
+
+    int i;
+
+    if (fp == NULL){
+        printf("File not found\n");
+        exit (0);
+    }
+
+    for (i = 0; i < size; i++){
+        fscanf(fp, "%i\n", &array[i] );
+    }
+
+
+    fclose(fp);
+	return 1;
+	
+	
+	}
+
