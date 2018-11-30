@@ -54,9 +54,11 @@ int main(){
 	memory[50] = 0x15;
 	memory[51] = 0x0f;
 	
-	read_from_file("program1.txt" , memory , 256);	
-	memory[9]=13;
+	read_from_file("program2.txt" , memory , 256);	
+	memory[9]=101;
 	
+	memory[100] = 11;
+	memory[101] =7;
 	
    /* main loop */ 
    while (run){
@@ -90,10 +92,10 @@ int main(){
         /* use the address mode to get the source operand */
         
         switch (amode){
-        case 0 : { if(operand < 256) source = memory[operand];         break; } /* absolute */
+        case 0 : { source = memory[operand]; printf("operand in amode = %d  , %d\n",operand , source);        break; } /* absolute */
         case 1 : { source = operand;                 break; } /* literal (immediate) */
-        case 2 : { if((operand + A0) < 256) source = memory[A0 + operand];    break; } /* indexed (indirect)*/
-        case 3 : { if((operand+PC) < 256) source = memory[PC + operand];    break; } /* pc relative */
+        case 2 : { source = memory[A0 + operand];    break; } /* indexed (indirect)*/
+        case 3 : { source = memory[PC + operand];    break; } /* pc relative */
         default: source = operand;
         }
     
@@ -150,6 +152,8 @@ int main(){
             case MUL: { if((amode == 0) || (amode == 1)) {
 				
 				D0 = D0 * source;
+				printf("D0 in mul = %d\n" ,D0);
+				printf("source in mul = %d\n" ,source);
 				}
 				 break;
 				}
@@ -160,7 +164,7 @@ int main(){
        /* save result in memory if register to memory */
        if( direction == 0){
            switch (amode){
-               case 0 : { if(operand < 256) memory[operand] = destination; break;} /* absolute */
+               case 0 : { memory[operand] = destination; break;} /* absolute */
                case 1 : {}												/* literal */
                case 2 : {if(A0 + operand < 256) memory[ A0 + operand] = destination; break;}   /* indexed */
                case 3 : {if(PC + operand < 256) memory[PC + operand] = destination; break;}	/* PC relative */
