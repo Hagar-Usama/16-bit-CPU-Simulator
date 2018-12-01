@@ -37,8 +37,8 @@ int main(){
    unsigned short int run = 1;            /* execute program while run is 1 */
    unsigned short int select = 0;		  /*making use of the unused bit*/
    unsigned short int D[2] ={0};		  /* Data registers */
-   unsigned short int A[2] ={0};
-   unsigned short int i = 0;
+   unsigned short int A[2] ={0};		  /* Address registers */
+   //unsigned short int i = 0;
    unsigned short int ub = 15;
    printf("D0 = %d\n",D[1]);
     
@@ -59,7 +59,7 @@ int main(){
 	memory[50] = 0x15;
 	memory[51] = 0x0f;
 	
-	read_from_file("program3.txt" , memory , 256);	
+	read_from_file("program2.txt" , memory , 256);	
 	memory[9]=101;
 	
 	memory[100] = 11;
@@ -101,9 +101,7 @@ int main(){
         switch (amode){
         case 0 : { source = memory[operand]; printf("operand in amode = %d  , %d\n",operand , source);        break; } /* absolute */
         case 1 : { source = operand;                 break; } /* literal (immediate) */
-        case 2 : { if(select ==1){source = memory[A[ub] + operand];}
-					else  source = memory[A[0] + operand];
-					break; } /* indexed (indirect)*/
+        case 2 : { source = memory[A[0] + operand];    break; } /* indexed (indirect)*/
         case 3 : { source = memory[PC + operand];    break; } /* pc relative */
         default: source = operand;
         }
@@ -112,41 +110,40 @@ int main(){
        
        /*** now execute the instruction ***/
         switch (opcode){
-            case MOVE : {  if(select != 0) ub = 0;
-				
-							if (direction == 0) destination = D[ub];
-                            else              D[ub] = source;
-                            if (D[ub] == 0) CCR = 1; else CCR =0;  /* update CCR */
+            case MOVE : { if (direction == 0 && ub==0) destination = D[0];
+                            else if(direction ==1 && ub ==0)   D[0] = source;                    
+                            else if(direction ==0 && ub ==1)   A[0] = D[0];
+                            if (D[0] == 0) CCR = 1; else CCR =0;  /* update CCR */
                           break;
                         }
-            case ADD : {  if(select != 0) ub = 0;
-				
-				 if (direction == 0)
-                            { destination = D[ub] + source;
+            case ADD : { if (direction == 0 && ub ==0)
+                            { destination = D[0] + source;
                               if (destination == 0) CCR = 1; else CCR = 0; 
                             }
-                        else
-                            { D[ub] = D[ub] + source;
+                        else if(direction == 1 && ub ==0)
+                            { D[ub] = D[0] + source;
                               if (D[ub] == 0) CCR = 1; CCR = 0;
-                            }
+                            }else if(direction == 0 && ub ==1) {
+								D[0] = D[0]+A[0]; 
+								if (D[0] == 0) CCR = 1; else CCR = 0; }
                         break;
                         }
-            case SUB : { if(select != 0) ub = 0;
-				if (direction == 0)
-                            { destination = D[ub] - source;
+            case SUB : { if (direction == 0 && ub ==0)
+                            { destination = D[0] -source;
                               if (destination == 0) CCR = 1; else CCR = 0; 
                             }
-                        else
-                            { D[ub] = D[ub] - source;
+                        else if(direction == 1 && ub ==0)
+                            { D[ub] = D[0] + source;
                               if (D[ub] == 0) CCR = 1; CCR = 0;
-                            }
+                            }else if(direction == 0 && ub ==1) {
+								D[0] = D[0]-A[0]; 
+								if (D[0] == 0) CCR = 1; else CCR = 0; }
                         break;
                         }
             case BRA : { if(amode == 0) PC = operand;
 						 if(amode == 1) PC = PC + operand; break;
 				}
-            case CMP : { if(select != 0) ub = 0;
-				MBR = D[ub] - source;
+            case CMP : { MBR = D[0] - source;
                          if (MBR == 0) CCR =1;
                          else CCR = 0; break;
                         }
@@ -162,13 +159,12 @@ int main(){
                         
                         }break;
                         }
-            case EXG: {MBR = D[ub]; D[ub]=A[ub]; A[ub]=MBR; break;}
+            case EXG: {MBR = D[0]; D[0]=A[0]; A[0]=MBR; break;}
            
             case MUL: { if((amode == 0) || (amode == 1)) {
 				
-				if(select != 0) ub = 0;
-				D[ub] = D[ub] * source;
-				printf("D0 in mul = %d\n" ,D[ub]);
+				D[0] = D[0] * source;
+				printf("D0 in mul = %d\n" ,D[0]);
 				printf("source in mul = %d\n" ,source);
 				}
 				 break;
@@ -182,8 +178,7 @@ int main(){
            switch (amode){
                case 0 : { memory[operand] = destination; break;} /* absolute */
                case 1 : {}												/* literal */
-               case 2 : { if(select != 1) ub = 0;
-				   if(A[ub] + operand < 256) memory[ A[ub] + operand] = destination; break;}   /* indexed */
+               case 2 : {if(A[0] + operand < 256) memory[ A[0] + operand] = destination; break;}   /* indexed */
                case 3 : {if(PC + operand < 256) memory[PC + operand] = destination; break;}	/* PC relative */
               
                
@@ -195,9 +190,7 @@ int main(){
        printf("****o/p*****\n");    
 	   printf("CCR :%d\n" , CCR);
        printf("D0 :%d\n" , D[0]);
-       printf("D1 :%d\n" , D[1]);
        printf("A0 :%d\n" , A[0]);
-       printf("A1 :%d\n" , A[1]);
        printf("destination :%d\n" , destination);
        printf("source :%d\n" , source);
        printf("PC :%d\n" , PC);
