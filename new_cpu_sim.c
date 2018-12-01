@@ -42,7 +42,7 @@ int main(){
    unsigned short int ub = 15;
    printf("D0 = %d\n",D[1]);
     
-  
+    
   //for (i=0 ; i<256 ; i++) memory[i] = 0;
 
    /*  7     6   5   4   3   2   1   0
@@ -65,6 +65,9 @@ int main(){
 	memory[100] = 11;
 	memory[101] =7;
 	
+	A[0] = 10;
+    memory[10] = 77;
+  
    /* main loop */ 
    while (run){
        //printf("******i/p*****\n");
@@ -100,11 +103,12 @@ int main(){
         
         switch (amode){
         case 0 : { source = memory[operand]; printf("operand in amode = %d  , %d\n",operand , source);        break; } /* absolute */
-        case 1 : { source = operand;                 break; } /* literal (immediate) */
+        case 1 : { source = operand;       printf("literal\n");          break; } /* literal (immediate) */
         case 2 : { if(select ==1){source = memory[A[ub] + operand];}
 					else  source = memory[A[0] + operand];
+					printf("source of indexed = %d\n",source);
 					break; } /* indexed (indirect)*/
-        case 3 : { source = memory[PC + operand];    break; } /* pc relative */
+        case 3 : { source = memory[PC + operand];  printf("relative\n");    break; } /* pc relative */
         default: source = operand;
         }
     
@@ -210,6 +214,8 @@ int main(){
        
        printf("END");
        
+      
+       
    return 0;
     }
 
@@ -258,3 +264,11 @@ int read_from_file(char* filename , unsigned short int* array , int size){
 	
 	}
 
+
+/**
+ * 
+ * 7-6-5-4 		3 			2		 1-0 					7-6-5-4-3-2-1-0 		1
+ * (opcode)	 not used	Direction	 Addressing modes	    	operand
+ * 
+ * 0001 x010 5
+ **/
